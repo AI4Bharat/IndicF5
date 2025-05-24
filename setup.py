@@ -30,7 +30,7 @@ setup(
         "torchaudio>=2.0.0",
         "torchdiffeq",
         "tqdm>=4.65.0",
-        "transformers",
+        "transformers==4.49.0",
         "transformers_stream_generator",
         "vocos",
         "wandb",
