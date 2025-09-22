@@ -101,48 +101,33 @@ def load_vocoder(vocoder_name="vocos", is_local=False, local_path="", device=dev
             repo_id = "charactr/vocos-mel-24khz"
             config_path = hf_hub_download(repo_id=repo_id, cache_dir=hf_cache_dir, filename="config.yaml")
             model_path = hf_hub_download(repo_id=repo_id, cache_dir=hf_cache_dir, filename="pytorch_model.bin")
-        
-        # Solution 1: Initialize on CPU first, load weights, then move to device
-        vocoder = Vocos.from_hparams(config_path).to("cpu")
+        vocoder = Vocos.from_hparams(config_path)
         state_dict = torch.load(model_path, map_location="cpu", weights_only=True)
-        
         from vocos.feature_extractors import EncodecFeatures
+
         if isinstance(vocoder.feature_extractor, EncodecFeatures):
             encodec_parameters = {
                 "feature_extractor.encodec." + key: value
                 for key, value in vocoder.feature_extractor.encodec.state_dict().items()
             }
             state_dict.update(encodec_parameters)
-        
         vocoder.load_state_dict(state_dict)
-        vocoder = vocoder.eval()
-        
-        # Move to target device after loading state_dict
-        vocoder = vocoder.to(device)
-        
+        vocoder = vocoder.eval().to(device)
     elif vocoder_name == "bigvgan":
         try:
             from third_party.BigVGAN import bigvgan
         except ImportError:
             print("You need to follow the README to init submodule and change the BigVGAN source code.")
-        
         if is_local:
             """download from https://huggingface.co/nvidia/bigvgan_v2_24khz_100band_256x/tree/main"""
-            # Load on CPU first
             vocoder = bigvgan.BigVGAN.from_pretrained(local_path, use_cuda_kernel=False)
         else:
             local_path = snapshot_download(repo_id="nvidia/bigvgan_v2_24khz_100band_256x", cache_dir=hf_cache_dir)
-            # Load on CPU first
             vocoder = bigvgan.BigVGAN.from_pretrained(local_path, use_cuda_kernel=False)
 
         vocoder.remove_weight_norm()
-        vocoder = vocoder.eval()
-        
-        # Move to target device after all operations
-        vocoder = vocoder.to(device)
-        
+        vocoder = vocoder.eval().to(device)
     return vocoder
-
 
 # load asr pipeline
 
