@@ -1,5 +1,5 @@
 accelerate>=0.33.0
-bitsandbytes>0.37.0; platform_machine != 'arm64' and platform_system != 'Darwin'
+bitsandbytes>0.37.0; platform_machine != 'arm64' and platform_system != 'darwin'
 cached_path
 click
 datasets
@@ -17,6 +17,7 @@ tomli
 torch>=2.0.0
 torchaudio>=2.0.0
 torchdiffeq
+torchcodec>=0.9.1
 tqdm>=4.65.0
 transformers<4.50
 transformers_stream_generator
