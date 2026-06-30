@@ -23,4 +23,14 @@ transformers_stream_generator
 vocos
 wandb
 x_transformers>=1.31.14
-
+gradio
+thop
+scipy
+scikit-learn
+pandas
+einops
+einx
+huggingface_hub
+python-dotenv
+psutil
+threadpoolctl

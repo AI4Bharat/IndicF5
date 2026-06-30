@@ -8,6 +8,24 @@ We release **IndicF5**, a **near-human polyglot** **Text-to-Speech (TTS)** model
 IndicF5 supports **11 Indian languages**:  
 **Assamese, Bengali, Gujarati, Hindi, Kannada, Malayalam, Marathi, Odia, Punjabi, Tamil, Telugu.**  
 
+## ✨ Features
+
+- **High-quality multilingual TTS** across 11 Indian languages.
+- **Reference-guided voice generation** using prompt audio + transcript.
+- **Fast GPU inference path** with advanced performance tuning controls.
+- **CPU fallback support** for systems without CUDA.
+- **Gradio launch UI** with queue support and interrupt (`Stop`) control.
+
+## 📝 Changelog
+
+### 2026-03-10
+- Added root launcher flow with `launch.py`.
+- Refactored project into modular `src/` architecture.
+- Fixed model invocation compatibility for current IndicF5 HF API.
+- Added performance tuning (NFE/CFG/Speed) and generation timing logs.
+- Added queue and interrupt controls in UI.
+- Improved CPU device-switch stability and error handling.
+
 ---
 
 ## 🚀 Installation
