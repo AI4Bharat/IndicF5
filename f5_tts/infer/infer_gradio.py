@@ -8,6 +8,7 @@ import tempfile
 from datetime import datetime
 from collections import OrderedDict
 from importlib.resources import files
+from pathlib import Path
 
 import click
 import gradio as gr
@@ -16,6 +17,9 @@ import soundfile as sf
 import torchaudio
 from cached_path import cached_path
 from transformers import AutoModelForCausalLM, AutoTokenizer
+
+OUTPUT_DIR = Path(__file__).parent / "infers"
+OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 
 try:
     import spaces
@@ -53,12 +57,23 @@ vocoder = load_vocoder()
 
 
 def load_f5tts(ckpt_path=str(cached_path("hf://SWivid/F5-TTS/F5TTS_Base/model_1200000.safetensors"))):
-    F5TTS_model_cfg = dict(dim=1024, depth=22, heads=16, ff_mult=2, text_dim=512, conv_layers=4)
+    F5TTS_model_cfg = dict(
+        dim=1024,
+        depth=22,
+        heads=16,
+        ff_mult=2,
+        text_dim=512,
+        conv_layers=4,
+    )
 
-    ckpt_path = "/home/tts/ttsteam/repos/F5-TTS/runs/indic_5/model_1176000.pt"
-    vocab_path = "/home/tts/ttsteam/repos/F5-TTS/runs/indic_5/vocab.txt"
-    return load_model(DiT, F5TTS_model_cfg, ckpt_path, vocab_file=vocab_path)
+    vocab_path = Path(__file__).parent / "examples" / "vocab.txt"
 
+    return load_model(
+        DiT,
+        F5TTS_model_cfg,
+        ckpt_path,
+        vocab_file=str(vocab_path),
+    )
 
 def load_e2tts(ckpt_path=str(cached_path("hf://SWivid/E2-TTS/E2TTS_Base/model_1200000.safetensors"))):
     E2TTS_model_cfg = dict(dim=1024, depth=24, heads=16, ff_mult=4)
@@ -114,7 +129,10 @@ def infer(
     
     print("ref audio is: ", type(ref_audio_orig), ref_audio_orig)
     current_time = datetime.now().strftime("%Y%m%d_%H%M%S") 
-    shutil.copy(ref_audio_orig, os.path.join("/home/tts/ttsteam/repos/F5-TTS/runs/indic_5/infers", f"reference_audio_{current_time}.wav"))
+    shutil.copy(
+    ref_audio_orig,
+    OUTPUT_DIR / f"reference_audio_{current_time}.wav",
+    )
     ref_audio, ref_text = preprocess_ref_audio_text(ref_audio_orig, ref_text, show_info=show_info)
 
     if model == "F5-TTS":
@@ -155,7 +173,11 @@ def infer(
         final_wave = final_wave.squeeze().cpu().numpy()
 
     gen_time = datetime.now().strftime("%Y%m%d_%H%M%S")
-    sf.write(os.path.join("/home/tts/ttsteam/repos/F5-TTS/runs/indic_5/infers", f"reference_audio_{current_time}_gen_{gen_time}.wav"), final_wave, final_sample_rate)
+    sf.write(
+    OUTPUT_DIR / f"reference_audio_{current_time}_gen_{gen_time}.wav",
+    final_wave,
+    final_sample_rate,
+    )
 
     # Save the spectrogram
     with tempfile.NamedTemporaryFile(suffix=".png", delete=False) as tmp_spectrogram:
@@ -845,7 +867,12 @@ with gr.Blocks() as app:
 def main(port, host, share, api, root_path):
     global app
     print("Starting app...")
-    app.queue(api_open=api).launch(server_name=host, server_port=port, share=share, show_api=api, root_path=root_path)
+    app.queue(api_open=api).launch(
+    server_name=host,
+    server_port=port,
+    share=share,
+    root_path=root_path,
+    )
 
 
 if __name__ == "__main__":

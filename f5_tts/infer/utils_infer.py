@@ -223,6 +223,7 @@ def load_checkpoint(model, ckpt_path, device: str, dtype=None, use_ema=True):
 def load_model(
     model_cls,
     model_cfg,
+    ckpt_path,
     mel_spec_type=mel_spec_type,
     vocab_file="",
     ode_method=ode_method,
@@ -254,7 +255,7 @@ def load_model(
     ).to(device)
 
     dtype = torch.float32 if mel_spec_type == "bigvgan" else None
-    # model = load_checkpoint(model, ckpt_path, device, dtype=dtype, use_ema=use_ema)
+    model = load_checkpoint(model, ckpt_path, device, dtype=dtype, use_ema=use_ema)
 
     return model
 
@@ -372,7 +373,7 @@ def infer_process(
     device=device,
 ):
     # Split the input text into batches
-    audio, sr = torchaudio.load(ref_audio)
+    audio, sr = torchaudio.load(ref_audio, backend="soundfile")
     max_chars = int(len(ref_text.encode("utf-8")) / (audio.shape[-1] / sr) * (25 - audio.shape[-1] / sr))
     gen_text_batches = chunk_text(gen_text, max_chars=max_chars)
     # for i, gen_text in enumerate(gen_text_batches):
