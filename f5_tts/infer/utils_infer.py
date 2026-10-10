@@ -25,6 +25,7 @@ from pydub import AudioSegment, silence
 from transformers import pipeline
 from vocos import Vocos
 
+from f5_tts.infer.normalizer import normalize_numbers
 from f5_tts.model import CFM
 from f5_tts.model.utils import (
     get_tokenizer,
@@ -371,6 +372,10 @@ def infer_process(
     fix_duration=fix_duration,
     device=device,
 ):
+    # Expand digits into words (the model cannot pronounce raw numerals)
+    ref_text = normalize_numbers(ref_text)
+    gen_text = normalize_numbers(gen_text)
+
     # Split the input text into batches
     audio, sr = torchaudio.load(ref_audio)
     max_chars = int(len(ref_text.encode("utf-8")) / (audio.shape[-1] / sr) * (25 - audio.shape[-1] / sr))
